@@ -3,19 +3,67 @@
  * Only fields name will be overwritten, if the field name will be changed.
  */
 import { catchAsync } from 'utils/catchAsync';
+import FriendsReq from 'models/friendRequest.model'
+import User from 'models/user.model';
+import httpStatus from 'http-status';
+import ApiError from 'utils/ApiError';
 
 export const fetchAllFriends = catchAsync(async (req, res) => {
   // get friends logic
+  const userId = req.user._id
+  // Fetch All Followers
+  const fetchFriends = await FriendsReq.find({ receiverID: userId, status: "Accept" })
+  res.status(httpStatus.OK).send({ results: { success: true, fetchFriends } });
 });
 
 export const sendFriendRequest = catchAsync(async (req, res) => {
   // send friend request logic here
+  const { receiverID } = req.body
+  const receiver = await User.findById(receiverID);
+  if (!receiver) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User Not Found!');
+  }
+
+  // If in Sender or Receiver id there is user id is existing then show the error of user exist
+  const fetchFriendReq = await FriendsReq.find({ $or: [{ senderID: req.user._id, receiverID }, { senderID: receiverID, receiverID: req.user._id }] })
+  if (fetchFriendReq) {
+    if (fetchFriendReq[0].status === "Pending") {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Friend Request is Already Available!');
+    } else if (fetchFriendReq[0].status === "Accept") {
+      throw new ApiError(httpStatus.NOT_FOUND, 'You Are Already Friends!');
+    }
+  }
+  const body = {
+    senderID: req.user._id,
+    receiverID: receiverID,
+    status: "Pending"
+  }
+  // Create Friend Request Into DB after clear all stage of validation
+  const friendReq = await FriendsReq.create(body);
+  res.status(httpStatus.OK).send({ results: { success: true, friendReq } });
 });
 
 export const friendRequest = catchAsync(async (req, res) => {
+  const fetchFriendReq = await FriendsReq.findOne({ senderID: req.params.id })
+  if (!fetchFriendReq) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Friend Request Not Found!');
+  }
+  if (fetchFriendReq.status === "Accept") {
+    throw new ApiError(httpStatus.NOT_FOUND, 'You Are Already Friends!');
+  }
 
+  if (req.body.status === "Accept") {
+    const user = await FriendsReq.findOneAndUpdate({ senderID: req.params.id, receiverID: req.user._id }, { $set: { status: req.body.status } }, { upsert: true });
+    res.status(httpStatus.OK).send({ results: { success: true, user } });
+  } else if (req.body.status === "Reject") {
+    const user = await FriendsReq.findOneAndDelete({ senderID: req.params.id, receiverID: req.user._id });
+    res.status(httpStatus.OK).send({ results: { success: true } });
+  }
 });
 
 export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
   // paginate api logic
+  const userId = req.user._id
+  const fetchFriends = await FriendsReq.find({ receiverID: userId, status: "Pending" }).limit(req.body.pagination || 5)
+  res.status(httpStatus.OK).send({ results: { success: true, fetchFriends } });
 });

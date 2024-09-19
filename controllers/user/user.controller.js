@@ -63,7 +63,14 @@ export const friendRequest = catchAsync(async (req, res) => {
 
 export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
   // paginate api logic
+  const { no_of_data_each_page, current_page_number } = req.body
   const userId = req.user._id
-  const fetchFriends = await FriendsReq.find({ receiverID: userId, status: "Pending" }).limit(req.body.pagination || 5)
+
+  const fetchFriends = await FriendsReq.aggregate([
+    { $match: { receiverID: userId, status: "Pending" } },
+    { $skip: no_of_data_each_page * current_page_number },
+    { $limit: no_of_data_each_page }
+  ])
   res.status(httpStatus.OK).send({ results: { success: true, fetchFriends } });
+
 });

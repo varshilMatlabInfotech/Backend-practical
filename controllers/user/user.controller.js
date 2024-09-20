@@ -3,19 +3,151 @@
  * Only fields name will be overwritten, if the field name will be changed.
  */
 import { catchAsync } from 'utils/catchAsync';
+import { faceBookService, userService } from 'services';
 
 export const fetchAllFriends = catchAsync(async (req, res) => {
-  // get friends logic
+  let { start, limit } = req.body;
+  console.log("------------->>>", req.body);
+
+  const pageStart = start ? start : 1; // changed default start to 1 for pagination consistency
+  const pageLimit = limit ? limit : 10;
+
+  // Aggregation pipeline
+  let aggregateQuery = [
+    {
+      $match: {
+        user: req.user._id,  // Ensure req.user._id exists
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',  // Reference the correct collection name in MongoDB
+        localField: 'userFriendList.friendOfUsers',
+        foreignField: '_id',
+        as: 'friendDetails'
+      }
+    },
+    { $unwind: '$friendDetails' },  // Breaks arrays into individual documents
+    {
+      $project: {
+        'friendDetails.name': 1,
+        'user': 1,
+      }
+    }
+  ];
+
+  // Use the pagination service
+  const friendList = await faceBookService.faceBookUserAggregatePaginate({
+    query: aggregateQuery,
+    offset: pageStart,
+    limit: pageLimit,
+  });
+
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      friendList,
+    },
+  });
 });
 
 export const sendFriendRequest = catchAsync(async (req, res) => {
   // send friend request logic here
+  let { sendUserId } = req.body
+  const userData = await userService.getUserById(sendUserId);
+  if (!userData) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'user not found');
+  }
+  const filter = { user: req.user._id };
+  let updateData = {
+    $push: {
+      sendRequestList: { userSendRequests: sendUserId }
+    }
+  }
+
+  let updatefaceBookUser = await faceBookService.updatefaceBookUser(filter, updateData)
+
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      updatefaceBookUser
+    },
+  });
 });
 
 export const friendRequest = catchAsync(async (req, res) => {
+  let { actionUserId } = req.params.id
+  let { isAccept } = req.body
+  const userData = await userService.getUserById(actionUserId);
+  if (!userData) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'user not found');
+  }
+
+  const filter = { user: req.user._id };
+  if(isAccept){
+    let updateData = {
+      $push: {
+        userFriendList: { friendOfUsers: actionUserId }
+      }
+    }
+  
+    await faceBookService.updatefaceBookUser(filter, updateData)
+  }
+
+  let updateData = {
+    $pull: {
+      friendRequestlist: { reqUsers: actionUserId }
+    }
+  }
+
+  await faceBookService.updatefaceBookUser(filter, updateData)
 
 });
 
 export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
   // paginate api logic
+   let {
+    start,
+    limit,
+  } = req.body;
+
+  const pageStart = start ? start : 0;
+  const pageLimit = limit ? limit : 10;
+
+  let aggregateQuery = [
+    {
+      $match: {
+        user: req.user._id
+      }
+    },
+    {
+      $lookup: {
+        from: 'User',
+        localField: 'friendRequestlist.reqUsers',
+        foreignField: '_id',
+        as: 'friendDetails'
+      }
+    },
+    { $unwind: '$friendDetails' },
+    {
+      $project: {
+        'friendDetails.name': 1,
+        'user': 1
+      }
+    }
+
+  ];
+
+  const friendRequestlist = await faceBookService.faceBookUserAggregatePaginate({
+    query: aggregateQuery,
+    offset: pageStart,
+    limit: pageLimit,
+  })
+
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      friendRequestlist,
+    },
+  });
 });

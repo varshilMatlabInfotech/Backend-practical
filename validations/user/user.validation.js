@@ -8,16 +8,30 @@ Joi.objectId = require('joi-objectid')(Joi);
 
 export const sendFriendRequest = {
   // send friend request validation logic here
+  body: Joi.object().keys({
+    sendUserId: Joi.string().required(),
+  }),
 };
 
 export const fetchAllFriends = {
   // get user validation logic here
+  body: Joi.object().keys({
+    start: Joi.number(),
+    limit: Joi.number(),
+  }),
 };
 
 export const paginatedUser = {
   // paginate user validation logic here
+  body: Joi.object().keys({
+    start: Joi.number(),
+    limit: Joi.number(),
+  }),
 };
 
 export const friendRequest = {
   // friend request validation logic here
+  body: Joi.object().keys({
+    isAccept: Joi.boolean().required(),
+  }),
 };

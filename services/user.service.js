@@ -12,6 +12,7 @@ export async function getUserById(id, options = {}) {
 }
 
 export async function getOne(query, options = {}) {
+  console.log("------query",query)
   const user = await User.findOne(query, options.projection, options);
   return user;
 }

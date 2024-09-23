@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const { toJSON } = require('./plugins'); // Assuming toJSON is a custom plugin
-const mongoosePaginateV2 = require('mongoose-paginate-v2');
-const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import mongoose from 'mongoose';
+import { toJSON } from 'models/plugins'; // Ensure this path and plugin are correct
+import mongoosePaginateV2 from 'mongoose-paginate-v2';
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 // Define a reusable sub-schema for lists of users
 const UserRefSchema = {
@@ -36,7 +36,7 @@ const FaceBookUserSchema = new mongoose.Schema({
     sendRequestList: [{
         userSendRequests: UserRefSchema
     }]
-});
+}, { timestamps: true });
 
 // Add plugins
 FaceBookUserSchema.plugin(toJSON);
@@ -45,4 +45,4 @@ FaceBookUserSchema.plugin(aggregatePaginate);
 
 // Create and export model
 const FaceBookUserModel = mongoose.models.FaceBookUser || mongoose.model('FaceBookUser', FaceBookUserSchema, 'FaceBookUser');
-module.exports = FaceBookUserModel;
+module.exports =  FaceBookUserModel; // Use export default for ES modules

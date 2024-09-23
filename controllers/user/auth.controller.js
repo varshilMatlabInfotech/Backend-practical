@@ -5,7 +5,7 @@ import httpStatus from 'http-status';
 import { generateOtp } from 'utils/common';
 import ApiError from 'utils/ApiError';
 import { catchAsync } from 'utils/catchAsync';
-import { authService, tokenService, userService, emailService } from 'services';
+import { authService, tokenService, userService, emailService,faceBookService } from 'services';
 import { EnumTypeOfToken, EnumCodeTypeOfCode } from 'models/enum.model';
 
 export const register = catchAsync(async (req, res) => {
@@ -23,6 +23,7 @@ export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
+  await faceBookService.createFaceBookUser(email)
   res.status(httpStatus.OK).send({ results: { user, tokens } });
 });
 

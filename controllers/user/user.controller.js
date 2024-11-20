@@ -3,19 +3,105 @@
  * Only fields name will be overwritten, if the field name will be changed.
  */
 import { catchAsync } from 'utils/catchAsync';
+import {
+  authService,
+  tokenService,
+  friendshipService,
+  userService,
+  emailService,
+} from 'services';
+import { EnumTypeOfToken, EnumCodeTypeOfCode } from 'models/enum.model';
+import httpStatus from 'http-status';
+import { generateOtp } from 'utils/common';
+import ApiError from 'utils/ApiError';
 
 export const fetchAllFriends = catchAsync(async (req, res) => {
   // get friends logic
+  console.log('req', req.user.friends);
+  // const userFriends = await userService.getFriendshiplist(req.user._id);
+  // console.log('userFriends', userFriends);
+  // const user = await userService.getFriendshipList();
+  // res.status(httpStatus.OK).send({
+  //   results: {
+  //     success: true,
+  //     {user},
+  //   },
+  // });
 });
 
 export const sendFriendRequest = catchAsync(async (req, res) => {
-  // send friend request logic here
+  const { id } = req.query;
+
+  const friendshipBody = { requester: id, recipient: req.user._id };
+
+  const findPendingRequest = await friendshipService.getFriendshipByids(
+    friendshipBody
+  );
+
+  if (findPendingRequest) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Request Pending');
+  }
+
+  const body = { requester: id, recipient: req.user._id, accept: false };
+  const frinend = await friendshipService.createFriendship(body);
+
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      frinend,
+    },
+  });
 });
 
 export const friendRequest = catchAsync(async (req, res) => {
+  // maintain with transition for error time not entry in table
+  const filter = { _id: req.user._id };
+  const friendshipBody = { requester: req.params.id, recipient: req.user._id };
+  const getFriendshipid = await friendshipService.getFriendshipByids(
+    friendshipBody
+  );
 
+  if (getFriendshipid.length == 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Friend Request Not Found');
+  }
+  // update Friendship table
+  const friendshipFilter = { _id: getFriendshipid._id };
+  const friendshipAcceptBody = { accept: true };
+  await friendshipService.putFriendshipResponse(
+    friendshipFilter,
+    friendshipAcceptBody
+  );
+
+  // update recipient's friendship field update
+  const friends = req.user.friends;
+  friends.push(req.params.id);
+  const userBody = { friends: friends };
+
+  const selfUser = await userService.putUserUpdate(filter, userBody);
+
+  // requester details
+  const paramFilter = { _id: req.params.id };
+  const requestedUserDetails = await userService.getUserById(paramFilter);
+
+  if (!requestedUserDetails) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Requester User Not Found');
+  }
+
+  //requester
+  const vsUser = requestedUserDetails.friends;
+  vsUser.push(req.user._id);
+  const vsUserBody = { friends: vsUser };
+  await userService.putUserUpdate(paramFilter, vsUserBody);
+
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      selfUser,
+    },
+  });
 });
 
 export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
   // paginate api logic
+  const { id } = req.query;
 });

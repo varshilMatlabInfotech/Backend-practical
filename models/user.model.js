@@ -70,6 +70,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     private: true,
   },
+
+  friends: {
+    type: [String],
+  },
 });
 UserSchema.plugin(toJSON);
 UserSchema.plugin(mongoosePaginateV2);
@@ -101,5 +105,6 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
   }
   next();
 });
-const UserModel = mongoose.models.User || mongoose.model('User', UserSchema, 'User');
+const UserModel =
+  mongoose.models.User || mongoose.model('User', UserSchema, 'User');
 module.exports = UserModel;

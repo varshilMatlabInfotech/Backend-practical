@@ -10,6 +10,7 @@ import { EnumTypeOfToken, EnumCodeTypeOfCode } from 'models/enum.model';
 
 export const register = catchAsync(async (req, res) => {
   const { body } = req;
+  console.log('body', body);
   const user = await userService.createUser(body);
   res.status(httpStatus.OK).send({
     results: {
@@ -31,10 +32,14 @@ export const sendVerifyEmail = catchAsync(async (req, res) => {
   const { email } = req.body;
   const emailVerifyToken = await tokenService.generateVerifyEmailToken(email);
   const user = await userService.getOne({ email });
-  emailService.sendEmailVerificationEmail(user, emailVerifyToken, 'user').then().catch();
+  emailService
+    .sendEmailVerificationEmail(user, emailVerifyToken, 'user')
+    .then()
+    .catch();
   res.status(httpStatus.OK).send({
     success: true,
-    message: 'Email has been sent to your registered email. Please check your email and verify it',
+    message:
+      'Email has been sent to your registered email. Please check your email and verify it',
   });
 });
 
@@ -45,13 +50,17 @@ export const sendVerifyEmail = catchAsync(async (req, res) => {
  */
 export const verifyEmail = catchAsync(async (req, res) => {
   await authService.verifyEmail(req.query);
-  res.status(httpStatus.OK).send({ message: 'Your Email is Verified Successfully' });
+  res
+    .status(httpStatus.OK)
+    .send({ message: 'Your Email is Verified Successfully' });
 });
 
 export const forgotPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
   await authService.forgotPassword(email);
-  res.status(httpStatus.OK).send({ results: { success: true, message: 'Code has been sent' } });
+  res
+    .status(httpStatus.OK)
+    .send({ results: { success: true, message: 'Code has been sent' } });
 });
 
 /**
@@ -59,9 +68,14 @@ export const forgotPassword = catchAsync(async (req, res) => {
  * @type {(function(*, *, *): void)|*}
  */
 export const forgotPasswordToken = catchAsync(async (req, res) => {
-  const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
+  const resetPasswordToken = await tokenService.generateResetPasswordToken(
+    req.body.email
+  );
   await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
-  res.status(httpStatus.OK).send({ success: true, message: 'Reset password link is sent to your email successfully' });
+  res.status(httpStatus.OK).send({
+    success: true,
+    message: 'Reset password link is sent to your email successfully',
+  });
 });
 
 /**
@@ -83,7 +97,12 @@ export const verifyOtp = catchAsync(async (req, res) => {
 
 export const resetPasswordOtp = catchAsync(async (req, res) => {
   await authService.resetPasswordOtp(req.body);
-  res.status(httpStatus.OK).send({ results: { success: true, message: 'Password has been reset successfully' } });
+  res.status(httpStatus.OK).send({
+    results: {
+      success: true,
+      message: 'Password has been reset successfully',
+    },
+  });
 });
 
 export const resetPasswordOtpVerify = catchAsync(async (req, res) => {
@@ -101,7 +120,9 @@ export const resetPasswordOtpVerify = catchAsync(async (req, res) => {
  */
 export const resetPasswordToken = catchAsync(async (req, res) => {
   await authService.resetPasswordToken(req.body);
-  res.status(httpStatus.OK).send({ success: true, message: 'Password has been reset successfully' });
+  res
+    .status(httpStatus.OK)
+    .send({ success: true, message: 'Password has been reset successfully' });
 });
 
 export const userInfo = catchAsync(async (req, res) => {
@@ -127,7 +148,10 @@ export const sendVerifyOtp = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'no user found with this id!');
   }
   if (user.emailVerified) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'your email is already verified!');
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'your email is already verified!'
+    );
   }
   user.codes.push({
     code: otp,
@@ -140,7 +164,8 @@ export const sendVerifyOtp = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({
     results: {
       success: true,
-      message: 'Email has been sent to your registered email. Please check your email and verify it',
+      message:
+        'Email has been sent to your registered email. Please check your email and verify it',
     },
   });
 });

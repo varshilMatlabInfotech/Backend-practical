@@ -11,6 +11,17 @@ export async function getUserById(id, options = {}) {
   return user;
 }
 
+export async function getFriendshiplist(id) {
+  console.log('body', id);
+  const friendship = await User.findById(id);
+  return friendship;
+}
+
+export async function putUserUpdate(filter, userBody) {
+  const friendship = await User.findOneAndUpdate(filter, userBody);
+  return friendship;
+}
+
 export async function getOne(query, options = {}) {
   const user = await User.findOne(query, options.projection, options);
   return user;

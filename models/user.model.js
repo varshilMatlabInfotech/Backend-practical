@@ -57,11 +57,8 @@ const UserSchema = new mongoose.Schema({
     enum: Object.values(enumModel.EnumRoleOfUser),
     default: enumModel.EnumRoleOfUser.USER,
   },
-  /**
-   * custom server authentication
-   * */
-  codes: {
-    type: [CodeSchema],
+  friends: {
+    type: [],
   },
   /**
    * password for authentication
@@ -101,5 +98,6 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
   }
   next();
 });
-const UserModel = mongoose.models.User || mongoose.model('User', UserSchema, 'User');
+const UserModel =
+  mongoose.models.User || mongoose.model('User', UserSchema, 'User');
 module.exports = UserModel;

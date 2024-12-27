@@ -3,19 +3,98 @@
  * Only fields name will be overwritten, if the field name will be changed.
  */
 import { catchAsync } from 'utils/catchAsync';
+import { User, FriendRequest } from "../../models/index";
+
 
 export const fetchAllFriends = catchAsync(async (req, res) => {
+  try{
   // get friends logic
+  const getAllData = await User.find();
+    res.status(200).json(getAllData);
+  }catch(error){
+    res.status(500).json({message: error.message})
+  }
 });
 
 export const sendFriendRequest = catchAsync(async (req, res) => {
-  // send friend request logic here
+  const { sender, receiver } = req.body;
+
+    if (!sender || !receiver) {
+        return res.status(400).json({ message: 'Sender and receiver are required' });
+    }
+
+    try {
+        const existingRequest = await FriendRequest.findOne({ sender, receiver });
+
+        if (existingRequest) {
+            return res.status(400).json({ message: 'Friend request already exists' });
+        }
+
+        const newRequest = new FriendRequest({
+            sender,
+            receiver
+        });
+
+        await newRequest.save();
+        res.status(201).json({ message: 'Friend request sent' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
 export const friendRequest = catchAsync(async (req, res) => {
+  const { status } = req.body;
 
+  if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Status must be either "accepted" or "rejected"' });
+  }
+
+  try {
+      const request = await FriendRequest.findById(req.params.id);
+
+      if (!request) {
+          return res.status(404).json({ message: 'Request not found' });
+      }
+
+      request.status = status;
+      await request.save();
+
+      res.json({ message: `Request ${status}` });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
   // paginate api logic
+  const { page = 1, limit = 10 } = req.query;
+
+  try {
+      const requests = await FriendRequest.find()
+          .skip((page - 1) * limit)
+          .limit(Number(limit));
+
+      res.json(requests);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+export const createUser = catchAsync(async (req, res) => {
+  const { name, email} =  req.body;
+  const data = new User({
+    name: name,
+    email: email
+})
+
+try {
+    const dataToSave = await data.save();
+    res.status(200).json(dataToSave)
+}
+catch (error) {
+    res.status(400).json({message: error.message})
+}
 });

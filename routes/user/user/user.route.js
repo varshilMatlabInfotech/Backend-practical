@@ -31,4 +31,11 @@ router
    */
   .put(validate(userValidation.friendRequest), userController.friendRequest);
 
+  router
+  .route('/adduser')
+  /**
+   * insert user
+   * */
+  .post(validate(userValidation.createUser), userController.createUser);
+
 export default router;

@@ -1,11 +1,11 @@
 import { isValidObjectId } from "mongoose";
 import { catchAsync } from "utils/catchAsync.js";
 import ApiError from "../../utils/ApiError.js";
-import { Friend } from "../../models/friend.model.js";
+import { Friend } from "../../models/index.js";
 
 export const fetchAllFriends = catchAsync(async (req, res) => {
   // get friends logic
-  const { friendId } = req.params;
+  const { friendId } = req.body;
   const { userId } = req.body;
   if (!isValidObjectId(userId)) {
     throw new ApiError("invaild user", 400);
@@ -51,13 +51,19 @@ export const sendRequest = catchAsync(async (req, res) => {
 export const friendRequest = catchAsync(async (req, res) => {
   const { friendId } = req.params;
   const { userId } = req.body;
+  const { accept, reject } = req.body;
   if (!isValidObjectId(userId)) {
     throw new ApiError("Friend is not vaild:", 400);
   }
   try {
     const request = await Friend.findOne({ friendId });
+    const accDel = await Friend.findById({ accept, reject });
     if (!request) {
       throw new ApiError("friend request is not vaild:", 400);
+    }
+    if (accDel) {
+      console.log(`Accept and reject wll be implementaed by the user${accDel}`);
+      return res;
     }
     return res.status(200).json({ request });
   } catch (error) {

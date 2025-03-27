@@ -1,34 +1,51 @@
-import express from 'express';
-import { userController } from 'controllers/user';
-import { userValidation } from 'validations/user';
-import validate from 'middlewares/validate';
+import express from "express";
+import { userController } from "controllers/user";
+import { userValidation } from "validations/user";
+import validate from "middlewares/validate";
+import auth from "../../../middlewares/auth";
 
 const router = express.Router();
 router
-  .route('/friends')
+  .route("/friends")
   /**
    * get list of friends
    * */
-  .get(validate(userValidation.fetchAllFriends), userController.fetchAllFriends);
+  .get(
+    auth(),
+    validate(userValidation.fetchAllFriends),
+    userController.fetchAllFriends
+  );
 
 router
-  .route('/friend')
+  .route("/friend")
   /**
    * send friend request
    */
-  .post(validate(userValidation.sendFriendRequest), userController.sendFriendRequest);
+  .post(
+    auth(),
+    validate(userValidation.sendFriendRequest),
+    userController.sendFriendRequest
+  );
 router
-  .route('/friends-request')
+  .route("/friends-request")
   /**
    * Fetch all friend Request with pagination
    * */
-  .get(validate(userValidation.paginatedUser), userController.getFriendRequestWithPagination);
+  .get(
+    auth(),
+    validate(userValidation.paginatedUser),
+    userController.getFriendRequestWithPagination
+  );
 
 router
-  .route('/friends-request/:id')
+  .route("/friends-request/:id")
   /**
    * id - Response to Friend Requests
    */
-  .put(validate(userValidation.friendRequest), userController.friendRequest);
+  .put(
+    auth(),
+    validate(userValidation.friendRequest),
+    userController.friendRequest
+  );
 
 export default router;

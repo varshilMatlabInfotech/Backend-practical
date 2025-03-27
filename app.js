@@ -18,7 +18,8 @@ import {
   successHandler,
   errorHandler as morganErrorHandler,
 } from "config/morgan";
-import friendRoute from "../Backend-practical/routes/friend/friend.routre";
+// import friendRoute from "../Backend-practical/routes/friend/friend.routre";
+import router from "./routes/index";
 
 const actuator = require("express-actuator");
 
@@ -53,8 +54,8 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use(passport.initialize());
 passport.use("jwt", jwtStrategy);
 // v1 api routes
-// app.use("/v1", routes);
-app.use("/", friendRoute);
+app.use("/v1", router);
+// app.use("/", friendRoute);
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, "Not found"));

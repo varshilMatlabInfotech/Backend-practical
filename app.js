@@ -1,66 +1,34 @@
-import path from "path";
-import httpStatus from "http-status";
-import mongoosePaginate from "mongoose-paginate-v2";
-import cors from "cors";
-import compression from "compression";
-import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
-import helmet from "helmet";
-import express from "express";
-import fileUpload from "express-fileupload";
-import passport from "passport";
-import jwtStrategy from "config/passport";
-import ApiError from "utils/ApiError";
-import { errorConverter, errorHandler } from "middlewares/error";
-import sendResponse from "middlewares/sendResponse";
-import config from "config/config";
-import {
-  successHandler,
-  errorHandler as morganErrorHandler,
-} from "config/morgan";
-import friendRoute from "../Backend-practical/routes/friend/friend.routre";
-
-const actuator = require("express-actuator");
-
-mongoosePaginate.paginate.options = {
-  customLabels: { docs: "results", totalDocs: "totalResults" },
-};
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 const app = express();
-app.use(actuator());
-if (config.env !== "test") {
-  app.use(successHandler);
-  app.use(morganErrorHandler);
-}
-// set security HTTP headers
-app.use(helmet());
-// parse json request body
-app.use(express.json());
-app.use(fileUpload());
-// parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
-// sanitize request data
-app.use(xss());
-app.use(mongoSanitize());
-// gzip compression
-app.use(compression());
-// set api response
-app.use(sendResponse);
-// enable cors
+
+const authRoutes = require("./routes/authRoutes");
+const friendRoutes = require("./routes/friendRoutes");
+const { response } = require("./utils/response");
+
 app.use(cors());
-app.options("*", cors());
-app.use(express.static(path.join(__dirname, "../public")));
-// jwt authentication
-app.use(passport.initialize());
-passport.use("jwt", jwtStrategy);
-// v1 api routes
-// app.use("/v1", routes);
-app.use("/", friendRoute);
-// send back a 404 error for any unknown api request
-app.use((req, res, next) => {
-  next(new ApiError(httpStatus.NOT_FOUND, "Not found"));
+app.use(express.json());
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => console.log(err));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port http://localhost:${PORT}`);
 });
-// convert error to ApiError, if needed
-app.use(errorConverter);
-// handle error
-app.use(errorHandler);
-export default app;
+
+app.use("/api", authRoutes);
+app.use("/api", friendRoutes);
+
+// Error Handling
+app.use((err, req, res, next) => {
+  response.error(res, err.message || "Server Error", 500);
+});
+
+module.exports = app;

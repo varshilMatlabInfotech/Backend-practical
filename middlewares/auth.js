@@ -19,6 +19,8 @@ const verifyCallback = (req, resolve, reject, role) => async (err, user, info) =
 };
 const auth = (role) => async (req, res, next) => {
   return new Promise((resolve, reject) => {
+    console.log("role", role);
+    console.log("request", req)
     passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, role))(req, res, next);
   })
     .then(() => next())

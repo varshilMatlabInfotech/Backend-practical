@@ -40,3 +40,5 @@ export async function updateUser(filter, body, options = {}) {
   const user = await User.findOneAndUpdate(filter, body, options);
   return user;
 }
+
+

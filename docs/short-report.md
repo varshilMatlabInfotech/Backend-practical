@@ -29,6 +29,7 @@ src/
  ├── controllers/
  ├── routes/
  ├── models/
+ ├── services/
  ├── validators/
  ├── middlewares/
  ├── utils/
@@ -217,5 +218,22 @@ src/
     ------------------------------------------------------------------
 
 7. Challenges
-    
     Handling friend request logic
+
+9. Learn New thing
+    Best Folder Structure
+
+9. Environment Variables
+    PORT=5000
+    MONGO_URI='connection string your'
+    JWT_SECRET=socialnetwork123
+
+
+10. Commands to Run
+
+    Install dependencies:
+        npm install
+
+    Start the server:
+        npm run dev
+

@@ -1,0 +1,209 @@
+{
+	"info": {
+		"_postman_id": "5d798588-6b05-472b-9ad1-fa4e5c609805",
+		"name": "personal",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25018787",
+		"_collection_link": "https://warped-escape-712160.postman.co/workspace/Team-Workspace~3896e0ce-f9f8-4900-8658-c087e0b9ef00/collection/25018787-5d798588-6b05-472b-9ad1-fa4e5c609805?action=share&source=collection_link&creator=25018787"
+	},
+	"item": [
+		{
+			"name": "registerUser",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"saroj\",\n    \"email\":\"saroj12@gmail.com\",\n    \"password\":\"Saroj123!\"\n}\n\n// {\n//     \"email\":\"saroj12@gmail.com\",\n//     \"password\":\"Saroj123!\"\n    // \"email\":\"vijay12@gmail.com\",\n    //\"email\":\"jit12@gmail.com\"\n    // \"email\":\"mark12@gmail.com\",\n// }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AddFriend",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGEzMTY2NzMzMDY1ZTc2MTYwMWZiZCIsImVtYWlsIjoibWFyazEyQGdtYWlsLmNvbSIsImlhdCI6MTc2MjI3NjAxMiwiZXhwIjoxNzYyMzYyNDEyfQ.4n3Z073bNz9c5X-gHtp2Mvp3vkf5CikqY7yiO0mpKpc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"toUserId\":\"690a3166733065e761601fbd\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/friend",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"friend"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "friendsRequest",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGEzMTViNzMzMDY1ZTc2MTYwMWZiNyIsImVtYWlsIjoidmlqYXkxMkBnbWFpbC5jb20iLCJpYXQiOjE3NjIyNzY1MzMsImV4cCI6MTc2MjM2MjkzM30.iBVpSyZm5qjdCn3eN7T4I1Kj_bGKdmlxSJvBmGmr60c",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"action\":\"accept\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/friends-request/690a3234733065e761601fc6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"friends-request",
+						"690a3234733065e761601fc6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get All friends",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGEzMTYxNzMzMDY1ZTc2MTYwMWZiYSIsImVtYWlsIjoiaml0MTJAZ21haWwuY29tIiwiaWF0IjoxNzYyMjc2NTgyLCJleHAiOjE3NjIzNjI5ODJ9.3CVBh9pAWFFVlaMPTaPjN7XDX1-v0KBcIzGCk-sVFxs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/friends?page=1&limit=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"friends"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "2"
+						},
+						{
+							"key": "sort",
+							"value": "_id",
+							"disabled": true
+						},
+						{
+							"key": "name",
+							"value": "vij",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get friends request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGEzMTYxNzMzMDY1ZTc2MTYwMWZiYSIsImVtYWlsIjoiaml0MTJAZ21haWwuY29tIiwiaWF0IjoxNzYyMjc2MTgyLCJleHAiOjE3NjIzNjI1ODJ9.wQfPLfKsqP18MyliTfRGf4zdPzHmrrGGuuXCnwSvVOM",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/friends-request?page=2&limit=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"friends-request"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						},
+						{
+							"key": "limit",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

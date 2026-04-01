@@ -70,6 +70,30 @@ const UserSchema = new mongoose.Schema({
     type: String,
     private: true,
   },
+  /**
+   * Accepted friends list
+   */
+  friends: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: [],
+  },
+  /**
+   * Users who sent request to current user
+   */
+  incomingFriendRequests: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: [],
+  },
+  /**
+   * Users to whom current user sent request
+   */
+  outgoingFriendRequests: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User',
+    default: [],
+  },
 });
 UserSchema.plugin(toJSON);
 UserSchema.plugin(mongoosePaginateV2);

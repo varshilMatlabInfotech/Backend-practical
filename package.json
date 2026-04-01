@@ -11,7 +11,7 @@
   "scripts": {
     "start-pm2": "pm2 start ecosystem.config.js --env development",
     "start-prod": "npm run build && pm2 start ecosystem.config.js --env production",
-    "start": " NODE_ENV=development nodemon --delay 3 --inspect index.js --exec babel-node -e js",
+    "start": "cross-env NODE_ENV=development nodemon --delay 3 --inspect index.js --exec babel-node -e js",
     "build": "babel . --ignore node_modules --source-type module --out-dir build && cp .env build/ ",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

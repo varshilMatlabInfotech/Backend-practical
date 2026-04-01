@@ -60,6 +60,10 @@ Errors are handled through common middleware, so API responses are clear and con
 - Modular code structure helps in fast changes.
 - Friend request features are easier when treated as state changes (pending -> accepted/rejected).
 
+## Testing and environment
+
+I created my own `.env` file locally (based on `example.env`) with MongoDB URL, JWT secret, and port settings for my machine. I tested all the required APIs end to end: registration and login, sending friend requests, listing incoming requests, accepting or rejecting, and listing friends. Data was saving correctly in MongoDB and the flows behaved as expected.
+
 ## Conclusion
 
 The required APIs are implemented and working with authentication, validation, and error handling.  

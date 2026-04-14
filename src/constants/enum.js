@@ -1,0 +1,9 @@
+const FRIEND_REQUEST_STATUS = {
+  PENDING: "PENDING",
+  ACCEPTED: "ACCEPTED",
+  REJECTED: "REJECTED",
+};
+
+module.exports = {
+  FRIEND_REQUEST_STATUS,
+};

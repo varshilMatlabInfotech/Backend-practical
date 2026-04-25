@@ -7,9 +7,8 @@ import httpStatus from 'http-status';
 import { Token } from 'models';
 import ApiError from 'utils/ApiError';
 import config from 'config/config';
-import _ from 'lodash';
 import { userService } from 'services';
-import { EnumTypeOfToken, EnumCodeTypeOfCode } from 'models/enum.model';
+import { EnumTypeOfToken } from 'models/enum.model';
 /**
  * Generate token
  * @param {ObjectId} userId
@@ -59,9 +58,6 @@ export const verifyToken = async (token, type) => {
     if (!user) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'User Not Exists');
     }
-    if (user.emailVerified) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email Already Verified');
-    }
     const tokenDoc = await Token.findOne({ token, type, user: payload.sub });
     if (!tokenDoc) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Invalid Token');
@@ -72,130 +68,7 @@ export const verifyToken = async (token, type) => {
   }
 };
 
-/**
- * Verify Code
- * @returns {Promise<Token>}
- * @param verificationRequest
- * @param {string} [verificationRequest.token]
- * @param {string} [verificationRequest.type]
- * @param {string} [verificationRequest.user]
- */
-export const verifyCode = async (verificationRequest) => {
-  const { code: token, type, email } = verificationRequest;
-  const userObj = await userService.getOne({ email });
-  if (!userObj) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No such User');
-  }
-  const tokenDoc = await Token.findOne({ token, type, user: userObj._id });
-  if (!tokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Incorrect code');
-  }
-  return tokenDoc;
-};
-
-export const verifyOtp = async (email, otp) => {
-  const user = await userService.getOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'no user found with this email');
-  }
-  if (user.emailVerified) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'your email is already verified!');
-  }
-  // eslint-disable-next-line eqeqeq
-  const otpCode = _.find(user.codes, (code) => code.code == otp && code.codeType === EnumCodeTypeOfCode.LOGIN);
-  if (!otpCode || otpCode.expirationDate < Date.now()) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'otp is Invalid');
-  }
-  user.codes = _.filter(user.codes, (code) => code.code != otp);
-  user.emailVerified = true;
-  user.active = true;
-  return user.save();
-};
-
-/**
- * Generate token
- * @returns {string}
- * @param length
- */
-const generateCode = (length) => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  return Array.from({ length }, () => characters.charAt(Math.floor(Math.random() * charactersLength))).join('');
-};
-/**
- * Generate reset password token
- * @param {string} email
- * @returns {Promise<string>}
- */
-export const generateResetPasswordToken = async (email) => {
-  const user = await userService.getOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
-  }
-  const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
-  const resetPasswordToken = generateCode(config.jwt.resetPasswordCodeSize);
-  await Token.deleteMany({ user, type: EnumTypeOfToken.RESET_PASSWORD });
-  await saveToken(resetPasswordToken, user.id, expires, EnumTypeOfToken.RESET_PASSWORD);
-  return resetPasswordToken;
-};
-
-export const verifyResetOtp = async (email, otp) => {
-  const user = await userService.getOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'no user found with this email');
-  }
-  // eslint-disable-next-line eqeqeq
-  const otpCode = _.find(user.codes, (code) => code.code == otp && code.codeType === EnumCodeTypeOfCode.RESETPASSWORD);
-  if (!otpCode || otpCode.expirationDate < Date.now()) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'otp is Invalid');
-  }
-  user.codes = _.filter(user.codes, (code) => code.code != otp);
-  await user.save();
-  return user;
-};
-
-export const verifyResetOtpVerify = async (email, otp) => {
-  const user = await userService.getOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'no user found with this email');
-  }
-  // eslint-disable-next-line eqeqeq
-  const otpCode = _.find(user.codes, (code) => code.code == otp && code.codeType === EnumCodeTypeOfCode.RESETPASSWORD);
-  if (!otpCode) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'otp is Invalid');
-  }
-  if (otpCode.expirationDate < Date.now()) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'otp is expired');
-  }
-  user.codes = _.filter(user.codes, (code) => code.code != otp);
-  await user.save();
-  return user;
-};
-
-/**
- * Generate Verify email token
- * @param {string} email
- * @returns {Promise<string>}
- */
-export const generateVerifyEmailToken = async (email) => {
-  const user = await userService.getOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
-  } else if (user.emailVerified) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already Verified');
-  }
-  const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
-  const token = generateToken(user.id, expires);
-  await Token.deleteMany({ user, type: EnumTypeOfToken.VERIFY_EMAIL });
-  await saveToken(token, user.id, expires, EnumTypeOfToken.VERIFY_EMAIL);
-  return token;
-};
-
-/**
- * Generate auth tokens
- * @param {User} user
- * @returns {Promise<Object>}
- */
+// Generate auth tokens for user
 export const generateAuthTokens = async (user) => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user.id, accessTokenExpires);

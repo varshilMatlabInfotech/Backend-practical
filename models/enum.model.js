@@ -13,8 +13,17 @@ const EnumTypeOfToken = {
   VERIFY_EMAIL: 'verifyEmail',
   REFRESH: 'refresh',
 };
+/**
+ * Lifecycle states of a friend request.
+ */
+const EnumFriendRequestStatus = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+};
 module.exports = {
   EnumCodeTypeOfCode,
   EnumRoleOfUser,
   EnumTypeOfToken,
+  EnumFriendRequestStatus,
 };

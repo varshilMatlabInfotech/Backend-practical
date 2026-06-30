@@ -1,3 +1,7 @@
+// Must be first: shims legacy Node APIs removed in newer versions before any
+// dependency that relies on them is loaded (Babel hoists imports, so this has
+// to be an import that runs ahead of the others).
+import "./utils/nodeCompat";
 import mongoose from "mongoose";
 // TODO: implement in the future
 import config from "config/config";

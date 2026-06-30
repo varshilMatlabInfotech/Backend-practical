@@ -1,87 +1,46 @@
-import { isValidObjectId } from "mongoose";
-import { catchAsync } from "utils/catchAsync.js";
-import ApiError from "../../utils/ApiError.js";
-import { Friend } from "../../models/friend.model.js";
+/**
+ * Controllers for the friend APIs.
+ * They are intentionally thin: validate-then-delegate to the service layer and
+ * shape the HTTP response. All errors bubble up to the error middleware via catchAsync.
+ */
+import httpStatus from 'http-status';
+import { pick } from 'utils/pick';
+import { catchAsync } from 'utils/catchAsync';
+import { friendService } from 'services';
 
+/**
+ * POST /friend
+ * Send a friend request to another user.
+ */
+export const sendFriendRequest = catchAsync(async (req, res) => {
+  const friendRequest = await friendService.sendFriendRequest(req.user._id, req.body.recipientId);
+  res.status(httpStatus.CREATED).send({ results: { success: true, friendRequest } });
+});
+
+/**
+ * PUT /friends-request/:id
+ * Respond (accept/reject) to a received friend request.
+ */
+export const respondFriendRequest = catchAsync(async (req, res) => {
+  const friendRequest = await friendService.respondToFriendRequest(req.user._id, req.params.id, req.body.action);
+  res.status(httpStatus.OK).send({ results: { success: true, friendRequest } });
+});
+
+/**
+ * GET /friends
+ * List the authenticated user's friends.
+ */
 export const fetchAllFriends = catchAsync(async (req, res) => {
-  // get friends logic
-  const { friendId } = req.params;
-  const { userId } = req.body;
-  if (!isValidObjectId(userId)) {
-    throw new ApiError("invaild user", 400);
-  }
-  try {
-    const allFriend = await Friend.findById({ friendId });
-    if (!allFriend) {
-      throw new ApiError("failed to fetch friends", 400);
-    }
-    return res.status(200).json(allFriend);
-  } catch (error) {
-    return res.status(400).json(400, new ApiError("faild to fetch all friend"));
-  }
+  const friends = await friendService.getFriends(req.user._id);
+  res.status(httpStatus.OK).send({ results: { success: true, friends } });
 });
 
-export const sendRequest = catchAsync(async (req, res) => {
-  // send friend request logic here
-  const { friendId } = req.params;
-  const { userId } = req.body;
-  if (!isValidObjectId(userId)) {
-    throw new ApiError("friend is invaild:", 400);
-  }
-  try {
-    const sendFriendRequest = await Friend.findOne({ friendId });
-    if (!sendFriendRequest) {
-      throw new ApiError("friend is not find:", 400);
-    }
-    return res.status(200).json(
-      200,
-      {
-        sucsess: true,
-        message: "send friend request",
-      },
-      sendFriendRequest
-    );
-  } catch (error) {
-    return res
-      .status(400)
-      .json(400, new ApiError("faild to send friend request", error));
-  }
-});
-
-export const friendRequest = catchAsync(async (req, res) => {
-  const { friendId } = req.params;
-  const { userId } = req.body;
-  if (!isValidObjectId(userId)) {
-    throw new ApiError("Friend is not vaild:", 400);
-  }
-  try {
-    const request = await Friend.findOne({ friendId });
-    if (!request) {
-      throw new ApiError("friend request is not vaild:", 400);
-    }
-    return res.status(200).json({ request });
-  } catch (error) {
-    return res
-      .status(400)
-      .json(400, new ApiError("faild to friend request", error));
-  }
-});
-export const getFriendRequestWithPagination = catchAsync(async (req, res) => {
-  // paginate api logic
-  const { friendId } = req.params;
-  const { userId } = req.body;
-  if (!isValidObjectId(userId)) {
-    throw new ApiError("user is invaild:", 400);
-  }
-  try {
-    const response = await Friend.findByIdAndUpdate({ friendId });
-    if (!response) {
-      throw new ApiError("failed to pagination:", 400);
-    }
-    return res.status(200).json({ response });
-  } catch (error) {
-    res
-      .status(400)
-      .json(new ApiError("faild to Pagination friend request", error));
-  }
+/**
+ * GET /friends-request
+ * List incoming (pending) friend requests with pagination.
+ */
+export const getIncomingFriendRequests = catchAsync(async (req, res) => {
+  const options = pick(req.query, ['page', 'limit', 'sortBy']);
+  const friendRequests = await friendService.getIncomingFriendRequests(req.user._id, {}, options);
+  res.status(httpStatus.OK).send({ results: friendRequests });
 });

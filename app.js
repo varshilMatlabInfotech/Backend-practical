@@ -18,6 +18,20 @@ import config from 'config/config';
 import { successHandler, errorHandler as morganErrorHandler } from 'config/morgan';
 
 const actuator = require('express-actuator');
+import mongoose from 'mongoose';
+
+// Patch mongoose.Model.countDocuments to support options for mongoose-paginate-v2 compatibility
+const originalCountDocuments = mongoose.Model.countDocuments;
+mongoose.Model.countDocuments = function (conditions, options, callback) {
+  if (typeof options === 'function') {
+    return originalCountDocuments.call(this, conditions, options);
+  }
+  const query = originalCountDocuments.call(this, conditions, callback);
+  if (options && typeof options === 'object') {
+    query.setOptions(options);
+  }
+  return query;
+};
 
 mongoosePaginate.paginate.options = {
   customLabels: { docs: 'results', totalDocs: 'totalResults' },

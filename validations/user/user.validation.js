@@ -7,17 +7,37 @@ import Joi from 'joi';
 Joi.objectId = require('joi-objectid')(Joi);
 
 export const sendFriendRequest = {
-  // send friend request validation logic here
+  body: Joi.object().keys({
+    receiverId: Joi.objectId(),
+    email: Joi.string().email(),
+  }).or('receiverId', 'email'),
 };
 
 export const fetchAllFriends = {
-  // get user validation logic here
+  query: Joi.object().keys({
+    page: Joi.number().integer().min(1),
+    limit: Joi.number().integer().min(1),
+    sortBy: Joi.string(),
+    search: Joi.string().allow('', null),
+  }),
 };
 
 export const paginatedUser = {
-  // paginate user validation logic here
+  query: Joi.object().keys({
+    page: Joi.number().integer().min(1),
+    limit: Joi.number().integer().min(1),
+    sortBy: Joi.string(),
+    status: Joi.string().valid('pending', 'accepted', 'rejected').default('pending'),
+  }),
 };
 
 export const friendRequest = {
-  // friend request validation logic here
+  params: Joi.object().keys({
+    id: Joi.objectId().required(),
+  }),
+  body: Joi.object().keys({
+    status: Joi.string().valid('accepted', 'rejected'),
+    action: Joi.string().valid('accept', 'reject'),
+  }).or('status', 'action'),
 };
+
